@@ -1,0 +1,92 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "validator",
+    "type": "RECORD",
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "version",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "datasetId",
+        "type": "STRING"
+      }
+    ]
+  },
+  {
+    "name": "notices",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "fields": [
+      {
+        "name": "code",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "severity",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "totalNotices",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "systemErrors",
+    "type": "RECORD",
+    "fields": [
+      {
+        "name": "notices",
+        "type": "RECORD",
+        "mode": "REPEATED",
+        "fields": [
+          {
+            "name": "code",
+            "type": "STRING",
+            "mode": "NULLABLE"
+          },
+          {
+            "name": "severity",
+            "type": "STRING",
+            "mode": "NULLABLE"
+          },
+          {
+            "name": "totalNotices",
+            "type": "STRING",
+            "mode": "NULLABLE"
+          },
+          {
+            "name": "sampleNotices",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+              {
+                "name": "exception",
+                "type": "STRING",
+                "mode": "NULLABLE"
+              },
+              {
+                "name": "message",
+                "type": "STRING",
+                "mode": "NULLABLE"
+              },
+              {
+                "name": "validator",
+                "type": "STRING",
+                "mode": "NULLABLE"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

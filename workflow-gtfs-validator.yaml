@@ -1,0 +1,113 @@
+#
+# Validates a GTFS dataset executing the GTFS validator on Cloud Run.
+#
+## Input:
+#  {
+#    "validator_image": "us-central1-docker.pkg.dev/md-poc-playground/gtfs-validator-registry/gtfs-validator-reporter@sha256:26767d681e5405e0e20a755d88047f126af6c3aebe46d898091f2e7c5c82bdd1",
+#    "feed_url": "https://storage.googleapis.com/storage/v1/b/mdb-latest/o/ar-buenos-aires-subterraneos-de-buenos-aires-subte-gtfs-6.zip?alt=media",
+#    "feed_id": "1234",
+#    "feed_key": "ar-buenos-aires-subterraneos-de-buenos-aires-subte-gtfs-6",
+#    "reference_validator_version": "4.0.0",
+#    "target_validator_version": "4.1.0",
+#    "reports_bucket_path": "gs://gtfs-validator-results-playground/reports"
+#  }
+## Output:
+# No output
+
+main:
+    params: [args]
+    steps:
+        - init:
+            assign:
+            - reportsBucketPath: ${args.reports_bucket_path}
+            - feedUrl: ${args.feed_url}
+            - feedKey: ${args.feed_key}
+            - location: ${default(map.get(args, "region"), "us-central1")}
+            - dateTime: ${text.replace_all("" + sys.now(), ".", "")}
+            - feedId: ${args.feed_id}
+            - validatorImage: ${args.validator_image}
+            - referenceValidatorVersion: ${args.reference_validator_version}
+            - targetValidatorVersion: ${args.target_validator_version}
+            - jobName: ${"gtfs-" + dateTime + "-" + text.replace_all(feedKey, "-", "")}
+            - jobName: ${text.substring(jobName, 0, if(len(jobName) > 63, 63, len(jobName) ) )}
+        - initLog:
+            call: sys.log
+            args:
+              text: ${"Creating Job " + jobName}
+              severity: INFO
+        - createCloudRunJob:
+            call: googleapis.run.v1.namespaces.jobs.create
+            args:
+                location: "${location}"
+                parent: ${"namespaces/" + sys.get_env("GOOGLE_CLOUD_PROJECT_NUMBER")}
+                body:
+                    apiVersion: run.googleapis.com/v1
+                    kind: Job
+                    metadata:
+                        name: ${jobName}
+                    spec:
+                        template:
+                            metadata:
+                                annotations:
+                                    run.googleapis.com/client-name: cloud-console
+                                    client.knative.dev/user-image: ${validatorImage}
+                                    run.googleapis.com/execution-environment: gen2                            
+                            spec:
+                                parallelism: 1
+                                taskCount: 1
+                                template:
+                                    spec:
+                                        containers:
+                                        - image: ${validatorImage}
+                                          args:
+                                            - --url
+                                            - ${feedUrl}
+                                            - -cs
+                                            - ${reportsBucketPath}
+                                            - -rr
+                                            - ${referenceValidatorVersion}
+                                            - -rt
+                                            - ${targetValidatorVersion}
+                                            - -did
+                                            - ${feedKey}
+                                          resources:
+                                            limits:
+                                                cpu: 1000m
+                                                memory: 1Gi
+                                        maxRetries: 3
+                                        timeoutSeconds: '600'
+                                        serviceAccountName: containers-sa@md-poc-playground.iam.gserviceaccount.com
+
+            result: createJobResult
+        - createJobLog:
+            call: sys.log
+            args:
+              text: ${json.encode_to_string(createJobResult)}
+              severity: INFO
+        - executeJob:
+            call: googleapis.run.v1.namespaces.jobs.run
+            args:
+                location: ${location}
+                name: ${"namespaces/" + sys.get_env("GOOGLE_CLOUD_PROJECT_NUMBER") + "/jobs/" + jobName}
+            result: executionResult
+        - executionJobLog:
+            call: sys.log
+            args:
+                text: ${executionResult}
+        - deleteCloudRunJob:
+            call: googleapis.run.v1.namespaces.jobs.delete
+            args:
+                location: ${location}
+                name: ${"namespaces/" + sys.get_env("GOOGLE_CLOUD_PROJECT_NUMBER") + "/jobs/" + jobName}
+            result: deleteJobResult
+        - deleteJobLog:
+            call: sys.log
+            args:
+                text: ${deleteJobResult}            
+        - response:
+            return:
+                executionResult: ${executionResult}
+                feedId: ${feedId}
+                feedKey: ${feedKey}
+                dateTime: ${dateTime}
+
