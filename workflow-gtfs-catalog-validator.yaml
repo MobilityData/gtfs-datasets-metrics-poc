@@ -1,0 +1,148 @@
+#
+# Validates a GTFS dataset executing the GTFS validator on Cloud Run.
+#
+## Input:
+#  {
+#    "results_bucket_path": "gs://gtfs-validator-results-playground/reports",
+#    "concurrency_limits": 20
+#  }
+## Output:
+# No output
+
+main:
+  params: [args]
+  steps:
+    - validate:
+        try:
+            steps:
+            - init:
+                assign:
+                # example: gs://gtfs-validator-results-playground/reports
+                - resultsBucketPath: $${args.results_bucket_path}
+                # Extrating the bucket's name from the bucket's path 
+                #  example: gtfs-validator-results-playground
+                - resultsBucketName: $${text.replace_all(resultsBucketPath, "gs://","")}
+                - resultsBucketName: $${text.split(resultsBucketName, "/")[0]}
+                #  Path refix included in the resultsBucketPath
+                # example: reports
+                - resultsBucketPrefixPath: $${text.substring(resultsBucketPath, len("gs://") + len(resultsBucketName) + 1, len(resultsBucketPath))}
+                - catalogUrl: ${configCatalogFunctionUrl}
+                - validateWorkflow: "workflow-gtfs-validator"
+                - location: $${default(map.get(args, "region"), "us-central1")}
+                - concurrencyLimits: $${default(map.get(args, "concurrency_limits"), 20)}
+                - dateTime: $${text.substring(time.format(sys.now()), 0, 16)}
+                - reportsExportPath: $${dateTime + "/" + sys.get_env("GOOGLE_CLOUD_WORKFLOW_EXECUTION_ID")}
+                - totalSucceeded: 0
+                - totalFailed: 0
+                - failedDatasets: []
+            - initLog:
+                call: sys.log
+                args:
+                    text: $${"Validating catalog from " + catalogUrl + ". Reports added to " + reportsExportPath }
+                    severity: INFO
+            - retrieveCatalog:
+                call: http.get
+                args:
+                    url: $${catalogUrl}
+                    auth:
+                        type: OIDC                       
+                result: catalogResponse
+            - datasetResponseLog:
+                call: sys.log
+                args:
+                    text: $${"Loaded catalog database with " + len(catalogResponse.body) + " datasets"}
+                    severity: INFO
+            - datasetCounter:
+                assign:
+                    - datasetCount: $${len(catalogResponse.body)}
+            - validationLoop:
+                parallel:
+                  concurrency_limit: $${concurrencyLimits}
+                  shared: [totalSucceeded, totalFailed, failedDatasets]
+                  for:
+                      value: datasetIndex
+                      range: [0, $${len(catalogResponse.body) -1}] # inclusive beginning and ending values
+                      steps:
+                          - datasetVars:
+                              assign:
+                              - validatorImage: "us-central1-docker.pkg.dev/md-poc-playground/gtfs-validator-registry/gtfs-validator-reporter@sha256:e40484c4326aa40af7958dc120c5b314931a689cc0bb93bac42337d363c2772e" 
+                              - feedUrl: $${catalogResponse.body[datasetIndex]["urls.latest"]}
+                              - feedId: $${catalogResponse.body[datasetIndex]["mdb_source_id"]}
+                              - feedKey: $${catalogResponse.body[datasetIndex]["source_key"]}
+                              - reference_validator_version: "4.0.0"
+                              - target_validator_version: "4.1.0"
+                              - reportFilename: $${ resultsBucketPath + "/" + reportsExportPath + "/" + feedKey + ".json"}
+                          - datasetLog:
+                              call: sys.log
+                              args:
+                                  text: $${"Validating dataset " + feedKey }
+                                  severity: INFO
+                          - callValidateWorkflow:
+                              try:
+                                steps:
+                                    - callValidate:
+                                        call: googleapis.workflowexecutions.v1beta.projects.locations.workflows.executions.run
+                                        args:
+                                          workflow_id: $${validateWorkflow}
+                                          location: $${location}
+                                          project_id: $${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+                                          argument:
+                                              validator_image: $${validatorImage}
+                                              feed_url: $${feedUrl}
+                                              feed_id: $${feedId}
+                                              feed_key: $${feedKey}
+                                              reports_bucket_path: $${resultsBucketPath + "/" + reportsExportPath + "/" + feedKey}
+                                              reference_validator_version: $${reference_validator_version}
+                                              target_validator_version: $${target_validator_version}
+                                        result: validateDatasetResponse
+                                    - validateDatasetResponseLog:
+                                        call: sys.log
+                                        args:
+                                            text: $${"Dataset validation response " + json.encode_to_string(validateDatasetResponse)}
+                                            severity: INFO
+                                    - summarySucceeded:
+                                        assign:
+                                        - totalSucceeded: $${totalSucceeded + 1}                                                
+
+                              except:
+                                  as: e
+                                  steps:
+                                      - summaryFailed:
+                                          assign:
+                                          - totalFailed: $${totalFailed + 1} 
+                                      - logException:
+                                          call: sys.log
+                                          args:
+                                              text: $${"Error validating dataset " + feedId + " exception " + json.encode_to_string(e)}
+                                              severity: ERROR
+                                      - addErrorValidation:
+                                          assign:
+                                          - failedDatasets[len(failedDatasets) - 1]: feedId                                   
+
+        except:
+            as: e
+            steps:
+                - unhandled_exception:
+                    raise: $${e}
+    - persistSummary:      
+        call: googleapis.storage.v1.objects.insert
+        args:
+          bucket: $${resultsBucketName}
+          uploadType: "media"
+          name: $${resultsBucketPrefixPath + "/" + reportsExportPath + "/" + "summary.json"}
+          body:
+            succeeded: $${totalSucceeded}
+            failed: $${totalFailed}
+            failedDatasets: $${failedDatasets}
+            total: $${totalSucceeded + totalFailed}
+            concurrencyLimits: $${concurrencyLimits}
+            resultsBucketPath: $${resultsBucketPath}
+    - return:
+        return:
+            summary:
+                succeeded: $${totalSucceeded}
+                failed: $${totalFailed}
+                failedDatasets: $${failedDatasets}
+                total: $${totalSucceeded + totalFailed}
+                concurrencyLimits: $${concurrencyLimits}
+                resultsBucketPath: $${resultsBucketPath}
