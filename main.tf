@@ -48,7 +48,7 @@ resource "google_project_iam_member" "service_user_binding" {
 }
 
 resource "google_storage_bucket" "mobilitydata-gtfs-validation-results" {
-  name          = "mobilitydata-gtfs-validation-results"
+  name          = "mobilitydata-gtfs-validation-results2"
   location      = "US"
   force_destroy = true
 
@@ -69,13 +69,13 @@ resource "google_artifact_registry_repository" "gtfs-validator-registry" {
   description   = "GTFS Validator Docker Registry"
   format        = "DOCKER"
 
-  docker_config {
-    immutable_tags = true
-  }
+#   docker_config {
+#     immutable_tags = true
+#   }
 }
 
 resource "google_workflows_workflow" "workflow-gtfs-validator" {
-  name            = "workflow-gtfs-validator"
+  name            = "workflow-gtfs-validator2"
   region          = var.gcp_region
   description     = "GTFS Validator Workflow"
   service_account = google_service_account.containers_service_account.id
@@ -139,14 +139,14 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
   member  = "serviceAccount:${google_service_account.containers_service_account.email}"
 }
 
-resource "google_workflows_workflow" "workflow-gtfs-catalog-validator" {
-  name            = "workflow-gtfs-catalog-validator"
-  region          = var.gcp_region
-  description     = "GTFS Catalog Validator Workflow"
-  service_account = google_service_account.containers_service_account.id
-  source_contents = templatefile("./workflow-gtfs-catalog-validator.yaml", { "configCatalogFunctionUrl" = "${google_cloudfunctions_function.getGtfsCatalogFunction.https_trigger_url}"})
-  depends_on = [google_project_service.workflows, google_cloudfunctions_function.getGtfsCatalogFunction]
-}
+    resource "google_workflows_workflow" "workflow-gtfs-catalog-validator" {
+      name            = "workflow-gtfs-catalog-validator2"
+      region          = var.gcp_region
+      description     = "GTFS Catalog Validator Workflow"
+      service_account = google_service_account.containers_service_account.id
+      source_contents = templatefile("./workflow-gtfs-catalog-validator.yaml", { "configCatalogFunctionUrl" = "${google_cloudfunctions_function.getGtfsCatalogFunction.https_trigger_url}"})
+      depends_on = [google_project_service.workflows, google_cloudfunctions_function.getGtfsCatalogFunction]
+    }
 
 resource "google_project_iam_member" "workflow_executor_binding" {
   project = var.project_id

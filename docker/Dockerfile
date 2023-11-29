@@ -15,8 +15,6 @@ ENV PATH $PATH:/root/google-cloud-sdk/bin
 # Copy the shell script, Java jar file, and any other necessary files
 COPY gtfs-validator-reporter.sh /
 COPY gtfs-validator-reporter-entry.sh /
-# The intended use of gtfs-validator-cli-help.jar is to render the latest command arguments descriptios.
-COPY gtfs-validator-cli-help.jar /
 
 # Set the working directory
 WORKDIR /

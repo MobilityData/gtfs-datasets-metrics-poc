@@ -34,8 +34,8 @@ usage() {
   echo "Options:"
   echo "  -cs, --cloud_storage <path>    Specify the cloud storage path"
   echo "  -h, --help                     Display this help message"
-  printf "\nGTFS Validator Usage:\n"
-  echo "$(java -jar gtfs-validator-cli-help.jar -h)"
+#  printf "\nGTFS Validator Usage:\n"
+#  echo "$(java -jar gtfs-validator-cli-help.jar -h)"
   exit 1
 }
 

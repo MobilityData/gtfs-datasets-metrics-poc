@@ -76,7 +76,7 @@ main:
                                                 memory: 1Gi
                                         maxRetries: 3
                                         timeoutSeconds: '600'
-                                        serviceAccountName: containers-sa@md-poc-playground.iam.gserviceaccount.com
+                                        serviceAccountName: containers-sa@md-poc-playground2.iam.gserviceaccount.com
 
             result: createJobResult
         - createJobLog:

@@ -65,12 +65,12 @@ main:
                       steps:
                           - datasetVars:
                               assign:
-                              - validatorImage: "us-central1-docker.pkg.dev/md-poc-playground/gtfs-validator-registry/gtfs-validator-reporter@sha256:e40484c4326aa40af7958dc120c5b314931a689cc0bb93bac42337d363c2772e" 
+                              - validatorImage: "us-central1-docker.pkg.dev/md-poc-playground2/gtfs-validator-registry/gtfs-validator:4.2.0"
                               - feedUrl: $${catalogResponse.body[datasetIndex]["urls.latest"]}
                               - feedId: $${catalogResponse.body[datasetIndex]["mdb_source_id"]}
                               - feedKey: $${catalogResponse.body[datasetIndex]["source_key"]}
-                              - reference_validator_version: "4.0.0"
-                              - target_validator_version: "4.1.0"
+                              - reference_validator_version: "4.1.0"
+                              - target_validator_version: "4.2.0"
                               - reportFilename: $${ resultsBucketPath + "/" + reportsExportPath + "/" + feedKey + ".json"}
                           - datasetLog:
                               call: sys.log
