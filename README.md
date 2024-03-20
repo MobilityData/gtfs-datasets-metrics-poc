@@ -2,12 +2,17 @@
 ## Process to generate analytics:
 - See this repo: [feat/gcp-release-workflows-poc](https://github.com/MobilityData/gtfs-datasets-metrics-poc/tree/feat/gcp-release-workflows-poc)
 - It contains a proof of concept that is not quite ready for prime time, but it's useful to understand the gist of it.
-- The code for 4.0.0 -> 4.1.0 analytics is in branch feat/gcp-release-workflows-poc
-- The code for 4.1.0 -> 4.2.0 analytics is in branch gcp-release-workflows-poc-4.2.0
+- The code for 4.0.0 -> 4.1.0 analytics is in the commit tagged with 4.0.0_to_4.1.0
+- The code for 4.1.0 -> 4.2.0 analytics is in the commit tagged with 4.1.0_to_4.2.0
+- The code for 4.2.0 -> 5.0.0 analytics is in the commit tagged with 4.2.0_to_5.0.0
 
 Principle:
 - Terraform is used to generate all resources in GCP, via the main.tf configuration.
 - Then a series of manual steps are necessary to generate the analytics spreadsheet
+
+Note: The suffix digit 2 is used in this document. Each new analytics currently has its own set of resources with it own digit. 
+This is to avoid conflicts with the previous analytics. This is not ideal, but it's a proof of concept.
+
 
 ## Resources created by main.tf:
 - Buckets:
