@@ -27,7 +27,7 @@ main:
                 # example: reports
                 - resultsBucketPrefixPath: $${text.substring(resultsBucketPath, len("gs://") + len(resultsBucketName) + 1, len(resultsBucketPath))}
                 - catalogUrl: ${configCatalogFunctionUrl}
-                - validateWorkflow: "workflow-gtfs-validator"
+                - validateWorkflow: "workflow-gtfs-validator3"
                 - location: $${default(map.get(args, "region"), "us-central1")}
                 - concurrencyLimits: $${default(map.get(args, "concurrency_limits"), 20)}
                 - dateTime: $${text.substring(time.format(sys.now()), 0, 16)}
@@ -65,12 +65,12 @@ main:
                       steps:
                           - datasetVars:
                               assign:
-                              - validatorImage: "us-central1-docker.pkg.dev/md-poc-playground2/gtfs-validator-registry/gtfs-validator:4.2.0"
+                              - validatorImage: "us-central1-docker.pkg.dev/md-poc-playground3/gtfs-validator-registry/gtfs-validator:5.0.0"
                               - feedUrl: $${catalogResponse.body[datasetIndex]["urls.latest"]}
                               - feedId: $${catalogResponse.body[datasetIndex]["mdb_source_id"]}
                               - feedKey: $${catalogResponse.body[datasetIndex]["source_key"]}
-                              - reference_validator_version: "4.1.0"
-                              - target_validator_version: "4.2.0"
+                              - reference_validator_version: "4.2.0"
+                              - target_validator_version: "5.0.0"
                               - reportFilename: $${ resultsBucketPath + "/" + reportsExportPath + "/" + feedKey + ".json"}
                           - datasetLog:
                               call: sys.log
