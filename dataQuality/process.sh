@@ -1,16 +1,17 @@
 #!/bin/zsh
 
-#counter=1
-#truncate -s 0 dataQuality.csv
-#for fic in data/*.json
-#do
-#    feed_id=$(echo "$fic" | sed 's/.*-\([0-9]\{1,\}\)\.json$/\1/')
-#    echo "$counter: Processing $fic"
-#    ((counter++))
-#    jq -r '.notices[] | "\(.code) '$feed_id' \(.totalNotices) \(.severity)"' $fic >> dataQuality.csv
-#done
-#
+counter=1
+truncate -s 0 dataQuality.csv
+for fic in ../../data/*.json
+do
+    feed_id=$(echo "$fic" | sed 's/.*-\([0-9]\{1,\}\)\.json$/\1/')
+    echo "$counter: Processing $fic"
+    ((counter++))
+    jq -r '.notices[] | "\(.code) '$feed_id' \(.totalNotices) \(.severity)"' $fic >> dataQuality.csv
+done
 
+
+exit 0
 sort -k2,2n dataQuality.csv -o dataQuality.csv
 
 cat dataQuality.csv | awk '
