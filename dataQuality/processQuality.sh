@@ -1,26 +1,38 @@
 #!/bin/zsh
 
 counter=1
-truncate -s 0 dataQuality.csv
-for fic in ../../data/*.json
+rawDataQualityFile="rawDataQuality.csv"
+dataQualityFile="dataQuality.csv"
+tmpFile="tmpDataQuality.csv"
+inputFolder="../../dataFormatted"
+
+truncate -s 0 $rawDataQualityFile
+truncate -s 0 $dataQualityFile
+truncate -s 0 $tmpFile
+for fic in $inputFolder/*.json
 do
-    feed_id=$(echo "$fic" | sed 's/.*-\([0-9]\{1,\}\)\.json$/\1/')
+    feed_name=$(basename "$fic" | sed 's/\.json$//')
+    feed_id=$(echo "$feed_name" | sed 's/.*-\([0-9]\{1,\}\)$/\1/')
     echo "$counter: Processing $fic"
     ((counter++))
-    jq -r '.notices[] | "\(.code) '$feed_id' \(.totalNotices) \(.severity)"' $fic >> dataQuality.csv
+    jq -r '.notices[] | "\(.code) '$feed_id' \(.totalNotices) \(.severity) '$feed_name'"' $fic >> $tmpFile
 done
 
 
-exit 0
-sort -k2,2n dataQuality.csv -o dataQuality.csv
+sort -k2,2n $tmpFile -o $tmpFile
 
-cat dataQuality.csv | awk '
-BEGIN {OFS = "," }
+cat $tmpFile | awk -v rawDataQualityFile="$rawDataQualityFile" -F' ' '
+BEGIN {
+  OFS = ","
+  print "datasetId,code,counter,severity" > rawDataQualityFile
+}
 {
   notice_code = $1
   feed_id = $2
   total_notices = $3
   severity = $4
+  feed_name = $5
+  print feed_name "," notice_code"," total_notices "," severity >> rawDataQualityFile
   if (severity == "ERROR") {
     errors[notice_code]++
     b = errors_list_feeds[notice_code]
@@ -34,7 +46,6 @@ BEGIN {OFS = "," }
     b = infos_list_feeds[notice_code]
     infos_list_feeds[notice_code] = (b ? b " " : "") feed_id
   }
-
 }
 
 function print_notices(notices, notices_list_feeds) {
@@ -53,4 +64,5 @@ END {
   print "INFOS"
   print_notices(infos, infos_list_feeds)
 
-}'
+}' > $dataQualityFile
+
