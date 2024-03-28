@@ -1,9 +1,12 @@
 #!/bin/zsh
 
 counter=1
+# The raw data quality file
 rawDataQualityFile="rawDataQuality.csv"
+# The final data quality file
 dataQualityFile="dataQuality.csv"
 tmpFile="tmpDataQuality.csv"
+# Where the json files were uploaded
 inputFolder="../../dataFormatted"
 
 truncate -s 0 $rawDataQualityFile
@@ -12,14 +15,18 @@ truncate -s 0 $tmpFile
 for fic in $inputFolder/*.json
 do
     feed_name=$(basename "$fic" | sed 's/\.json$//')
+    # Just keep the number at the end of the feed name
     feed_id=$(echo "$feed_name" | sed 's/.*-\([0-9]\{1,\}\)$/\1/')
     echo "$counter: Processing $fic"
     ((counter++))
     jq -r '.notices[] | "\(.code) '$feed_id' \(.totalNotices) \(.severity) '$feed_name'"' $fic >> $tmpFile
 done
 
-
+# A typical line of the tmp file looks like this:
+# missing_recommended_file 2023 1 WARNING it-brindisi-stp-brindisi-gtfs-2023
+# Sort by the second one, the feed id, so the list of feeds will be sorted by feed id in the final file
 sort -k2,2n $tmpFile -o $tmpFile
+
 
 cat $tmpFile | awk -v rawDataQualityFile="$rawDataQualityFile" -F' ' '
 BEGIN {
@@ -32,6 +39,9 @@ BEGIN {
   total_notices = $3
   severity = $4
   feed_name = $5
+  # Having the raw data has been requested
+  # A typical line in that file looks like this:
+  # it-brindisi-stp-brindisi-gtfs-2020,fast_travel_between_consecutive_stops,220,WARNING
   print feed_name "," notice_code"," total_notices "," severity >> rawDataQualityFile
   if (severity == "ERROR") {
     errors[notice_code]++

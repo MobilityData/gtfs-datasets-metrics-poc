@@ -7,10 +7,13 @@ tempFile="tempDtaDepth.csv"
 # The sorting file is the same as tempFile, but before it is sorted. We sort so the list of feeds for a given feature
 # in the final file is sorted.
 sortingFile="sortingFile.csv"
-echo "tempFile = $tempFile"
+
+rawDataDepthFile="rawDataDepthFile.csv"
+
 truncate -s 0 $tempFile
 truncate -s 0 $sortingFile
 truncate -s 0 dataDepth.csv
+truncate -s 0 $rawDataDepthFile
 
 # First sort the files by feed_id so the list of feed per feature is sorted at the end
 for fic in ../../dataFormatted/*.json
@@ -43,8 +46,11 @@ while IFS= read -r line
 do
 
   read -r feed_id fic <<< "$line"
+  feed_name=$(basename "$fic" | sed 's/\.json$//')
   echo "feed_id = $feed_id, fic = $fic"
-  jq '.summary.gtfsFeatures[]' $fic | grep -v '^$' | sed 's/"//g' | awk -v var="$feed_id" '{print var "," $0}' >> $tempFile
+  jq '.summary.gtfsFeatures[]' $fic | grep -v '^$' | sed 's/"//g' |
+    awk -v feed_id="$feed_id" -v feed_name="$feed_name" '{print feed_id "," $0 "," feed_name}' >> $tempFile
+
 
 done < "$sortingFile"
 
@@ -53,16 +59,21 @@ done < "$sortingFile"
 # The beginning of tempFile is the list of features with a 0 as the feed id.
 # That way we can "prime" the aggregation and know if a feature is used in 0 feed
 echo "Features,Number of feeds,Feed ids" > dataDepth.csv
-cat $tempFile | awk -v features="$features" -F',' '
+cat $tempFile | awk -v features="$features" -v rawDataDepthFile="$rawDataDepthFile" -F',' '
+BEGIN {
+  print "Feed Id,Feed Name,Component" > rawDataDepthFile
+}
 {
   feed_id = $1
   feature = $2
-  if (feed_id == 0) {
+  feed_name = $3
   print "Processing feature " feature " with feed_id " feed_id
+  if (feed_id == 0) {
     numFeeds[feature] = 0
     next
   }
   feeds[feature] = (feeds[feature] ? feeds[feature] " " : "") feed_id
+  print feed_id "," feed_name "," feature >> rawDataDepthFile
   numFeeds[feature]++
 }
 END {
