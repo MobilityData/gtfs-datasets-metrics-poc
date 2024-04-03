@@ -10,6 +10,10 @@ on:
         description: 'gs:// URL to access the right bucket'
         required: false
         default: 'gs://mobilitydata-gtfs-validation-results3/reports/2024-03-15T04:11/'
+      VALIDATOR_VERSION:
+        description: 'Version of the validator to use. Only data from that version found in the bucket will be used.
+        required: false
+        default: '5.0.0'
 
 jobs:
   generate-data-quality:
@@ -18,6 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Authenticate with Google Cloud if necessary. No need if bucket is public
 #      - uses: google-github-actions/auth@v2
 #        with :
 #          credentials_json: ${{ secrets.POC3_BUCKET_ACCESSOR_SA_KEY }}
@@ -42,7 +47,7 @@ jobs:
       - name: Download reports
         run: |
           cd dataQuality
-          ./download.sh
+          ./download.sh  ${{ github.event.inputs.BUCKET_URL || '5.0.0' }}
           mkdir reports
           bash ./commands.txt
 
