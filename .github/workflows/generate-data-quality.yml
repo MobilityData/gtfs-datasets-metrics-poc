@@ -50,10 +50,19 @@ jobs:
           name: commands.txt
           path: dataQuality/commands.txt
 
+      - name: Processs reports for data quality
+        run: |
+          cd dataQuality
+          ./processQuality.sh
+
       - uses: actions/upload-artifact@v3
         with:
           name: dataQuality.csv
           path: dataQuality/dataQuality.csv
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rawDataQuality.csv
+          path: dataQuality/rawDataQuality.csv
 
 
