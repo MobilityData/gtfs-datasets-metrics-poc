@@ -50,7 +50,7 @@ jobs:
           name: commands.txt
           path: dataQuality/commands.txt
 
-      - name: Processs reports for data quality
+      - name: Process reports for data quality
         run: |
           cd dataQuality
           ./processQuality.sh
@@ -77,3 +77,17 @@ jobs:
           name: FEATURES.md
           path: gtfs-validator/docs/FEATURES.md
 
+      - name: Process reports for data depth
+        run: |
+          cd dataQuality
+          ./processDepth.sh
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rawDataDepth.csv
+          path: dataQuality/rawDataDepth.csv
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rawDataQuality.csv
+          path: dataQuality/rawDataQuality.csv
