@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 cat allFiles.txt | awk -F '/' '
 BEGIN {
