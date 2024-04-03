@@ -2,7 +2,7 @@
 
 cat allFiles.txt | awk -F '/' '
 BEGIN {
-    print "" > "commands.txt"
+    print "#!/bin/bash" > "commands.txt"
 }
 /report-summary.json/{
     # Process only the lines with 9 fields

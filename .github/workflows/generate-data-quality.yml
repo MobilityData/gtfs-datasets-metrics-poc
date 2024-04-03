@@ -47,6 +47,11 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
+          name: commands.txt
+          path: dataQuality/commands.txt
+
+      - uses: actions/upload-artifact@v3
+        with:
           name: dataQuality.csv
           path: dataQuality/dataQuality.csv
 
