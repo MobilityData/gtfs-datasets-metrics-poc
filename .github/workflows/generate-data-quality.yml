@@ -11,7 +11,7 @@ on:
         required: false
         default: 'gs://mobilitydata-gtfs-validation-results3/reports/2024-03-15T04:11/'
       VALIDATOR_VERSION:
-        description: 'Version of the validator to use. Only data from that version found in the bucket will be used.
+        description: 'Version of the validator to use. Only data from that version found in the bucket will be used."
         required: false
         default: '5.0.0'
 
@@ -47,7 +47,7 @@ jobs:
       - name: Download reports
         run: |
           cd dataQuality
-          ./download.sh  ${{ github.event.inputs.BUCKET_URL || '5.0.0' }}
+          ./download.sh  ${{ github.event.inputs.VALIDATOR_VERSION || '5.0.0' }}
           mkdir reports
           bash ./commands.txt
 
