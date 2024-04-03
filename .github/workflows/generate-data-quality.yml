@@ -42,7 +42,13 @@ jobs:
         run: |
           cd dataQuality
           ./download.sh
+          mkdir reports
           bash ./commands.txt
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dataQuality.csv
+          path: dataQuality/dataQuality.csv
 
 
 

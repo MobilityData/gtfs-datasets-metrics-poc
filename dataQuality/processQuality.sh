@@ -7,7 +7,7 @@ rawDataQualityFile="rawDataQuality.csv"
 dataQualityFile="dataQuality.csv"
 tmpFile="tmpDataQuality.csv"
 # Where the json files were uploaded
-inputFolder="../../dataFormatted"
+inputFolder="./reports"
 
 truncate -s 0 $rawDataQualityFile
 truncate -s 0 $dataQualityFile
