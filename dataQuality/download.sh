@@ -29,7 +29,6 @@ BEGIN {
         print line_number ": " agency
         print "echo \"Processing #" line_number "\"" >> "commands.txt"
         print command >> "commands.txt"
-#        system( command )
     }
 
     # Update the previous agency
