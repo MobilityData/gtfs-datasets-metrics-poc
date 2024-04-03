@@ -40,7 +40,7 @@ awk -F '|' '
   # Some features have a star at the end in the features file (e.g. "Pathways (extra)*"). Remove it.
   gsub(/\*$/, "", $3)
   print "0," $3
-}' ./gtfs-validator/docs/FEATURES.md > $tempFile
+}' ../gtfs-validator/docs/FEATURES.md > $tempFile
 
 # Extract the list of features from the results json files.
 while IFS= read -r line
