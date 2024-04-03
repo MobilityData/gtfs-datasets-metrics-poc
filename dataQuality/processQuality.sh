@@ -6,7 +6,7 @@ outputFolder="./results"
 mkdir -p $outputFolder
 counter=1
 # The raw data quality file
-rawDataQualityFile="$outoutFolder/rawDataQuality.csv"
+rawDataQualityFile="$outputFolder/rawDataQuality.csv"
 # The final data quality file
 dataQualityFile="$outputFolder/dataQuality.csv"
 tmpFile="tmpDataQuality.csv"
