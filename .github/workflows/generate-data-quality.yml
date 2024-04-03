@@ -1,0 +1,24 @@
+name: Generate Data Quality
+
+on:
+  push:
+    branches:
+      - 85-data-quality
+  workflow_dispatch:
+
+jobs:
+  generate-data-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+#      - uses: google-github-actions/auth@v2
+#        with :
+#          credentials_json: ${{ secrets.GCP_WEB_VALIDATOR_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '>= 390.0.0'
+
+      - name: Get list of files
+        run: |
+          gsutil ls gs://mobilitydata-gtfs-validation-results3/reports/
