@@ -30,7 +30,7 @@ jobs:
           cd dataQuality
           BUCKET_URL=${{ github.event.inputs.BUCKET_URL || 'gs://mobilitydata-gtfs-validation-results3/reports/2024-03-15T04:11/' }}
           echo "Listing files in $BUCKET_URL"
-          gsutil ls $BUCKET_URL | head -10 > allFiles.txt
+          gsutil ls -r $BUCKET_URL | head -10 > allFiles.txt
           cat allFiles.txt
 
       - uses: actions/upload-artifact@v3
@@ -38,4 +38,11 @@ jobs:
           name: allFiles.txt
           path: dataQuality/allFiles.txt
 
-#      - name Download reports
+      - name: Download reports
+        run: |
+          cd dataQuality
+          ./download.sh
+          cat commands.txt
+
+
+
