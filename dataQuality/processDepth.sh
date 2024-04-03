@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # tempFile will be made of 2 columns, the feed is and the feature id present in the feed.
 # That means there will be as many lines for given feed as the number of features in the feed.

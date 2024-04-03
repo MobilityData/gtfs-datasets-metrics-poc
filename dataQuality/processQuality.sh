@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 counter=1
 # The raw data quality file
