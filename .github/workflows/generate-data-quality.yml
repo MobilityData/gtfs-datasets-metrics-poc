@@ -65,4 +65,15 @@ jobs:
           name: rawDataQuality.csv
           path: dataQuality/rawDataQuality.csv
 
+      - name: Checkout gtfs-validator repository to get the features.md file.
+        uses: actions/checkout@v3
+        with:
+            repository: MobilityData/gtfs-validator
+            ref: master
+            path: gtfs-validator
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: FEATURES.md
+          path: gtfs-validator/docs/FEATURES.md
 

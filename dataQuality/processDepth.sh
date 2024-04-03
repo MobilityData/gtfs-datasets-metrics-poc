@@ -9,6 +9,8 @@ tempFile="tempDtaDepth.csv"
 sortingFile="sortingFile.csv"
 
 rawDataDepthFile="rawDataDepthFile.csv"
+# Where the json files were uploaded
+inputFolder="./reports"
 
 truncate -s 0 $tempFile
 truncate -s 0 $sortingFile
@@ -16,7 +18,7 @@ truncate -s 0 dataDepth.csv
 truncate -s 0 $rawDataDepthFile
 
 # First sort the files by feed_id so the list of feed per feature is sorted at the end
-for fic in ../../dataFormatted/*.json
+for fic in inputFolder/*.json
 do
   echo "Processing $fic"
   feed_id=`echo "$fic" | sed 's/.*-\([0-9]\{1,\}\)\.json$/\1/'`

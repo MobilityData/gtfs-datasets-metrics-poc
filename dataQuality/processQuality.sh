@@ -6,7 +6,7 @@ rawDataQualityFile="rawDataQuality.csv"
 # The final data quality file
 dataQualityFile="dataQuality.csv"
 tmpFile="tmpDataQuality.csv"
-# Where the json files were uploaded
+# Where the json files were downloaded
 inputFolder="./reports"
 
 truncate -s 0 $rawDataQualityFile
