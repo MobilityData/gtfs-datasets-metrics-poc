@@ -55,15 +55,15 @@ jobs:
           cd dataQuality
           ./processQuality.sh
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: dataQuality.csv
-          path: dataQuality/dataQuality.csv
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: rawDataQuality.csv
-          path: dataQuality/rawDataQuality.csv
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: dataQuality.csv
+#          path: dataQuality/dataQuality.csv
+#
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: rawDataQuality.csv
+#          path: dataQuality/rawDataQuality.csv
 
       - name: Checkout gtfs-validator repository to get the features.md file.
         uses: actions/checkout@v3
@@ -72,22 +72,27 @@ jobs:
             ref: master
             path: gtfs-validator
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: FEATURES.md
-          path: gtfs-validator/docs/FEATURES.md
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: FEATURES.md
+#          path: gtfs-validator/docs/FEATURES.md
 
       - name: Process reports for data depth
         run: |
           cd dataQuality
           ./processDepth.sh
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: rawDataDepth.csv
-          path: dataQuality/rawDataDepthFile.csv
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: rawDataDepth.csv
+#          path: dataQuality/rawDataDepthFile.csv
+#
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: dataDepth.csv
+#          path: dataQuality/dataDepth.csv
 
       - uses: actions/upload-artifact@v3
         with:
-          name: dataDepth.csv
-          path: dataQuality/dataDepth.csv
+          name: results
+          path: dataQuality/results

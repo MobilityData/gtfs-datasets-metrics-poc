@@ -1,13 +1,16 @@
 #!/bin/bash
 
-counter=1
-# The raw data quality file
-rawDataQualityFile="rawDataQuality.csv"
-# The final data quality file
-dataQualityFile="dataQuality.csv"
-tmpFile="tmpDataQuality.csv"
 # Where the json files were downloaded
 inputFolder="./reports"
+outputFolder="./results"
+mkdir -p $outputFolder
+counter=1
+# The raw data quality file
+rawDataQualityFile="$outoutFolder/rawDataQuality.csv"
+# The final data quality file
+dataQualityFile="$outputFolder/dataQuality.csv"
+tmpFile="tmpDataQuality.csv"
+
 
 truncate -s 0 $rawDataQualityFile
 truncate -s 0 $dataQualityFile

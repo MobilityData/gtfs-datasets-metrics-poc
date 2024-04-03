@@ -1,5 +1,8 @@
 #!/bin/bash
 
+outputFolder="./results"
+mkdir -p $outputFolder
+
 # tempFile will be made of 2 columns, the feed is and the feature id present in the feed.
 # That means there will be as many lines for given feed as the number of features in the feed.
 tempFile="tempDtaDepth.csv"
@@ -8,13 +11,14 @@ tempFile="tempDtaDepth.csv"
 # in the final file is sorted.
 sortingFile="sortingFile.csv"
 
-rawDataDepthFile="rawDataDepthFile.csv"
+rawDataDepthFile="$outputFolder/rawDataDepth.csv"
+dataDepthFile="$outputFolder/dataDepth.csv"
 # Where the json files were uploaded
 inputFolder="./reports"
 
 truncate -s 0 $tempFile
 truncate -s 0 $sortingFile
-truncate -s 0 dataDepth.csv
+truncate -s 0 $dataDepthFile
 truncate -s 0 $rawDataDepthFile
 
 # First sort the files by feed_id so the list of feed per feature is sorted at the end
@@ -59,8 +63,8 @@ done < "$sortingFile"
 # The output will be a csv file with 3 columns: feature id, number of feeds and the sorted list of feed ids.
 # The beginning of tempFile is the list of features with a 0 as the feed id.
 # That way we can "prime" the aggregation and know if a feature is used in 0 feed
-echo "Features,Number of feeds,Feed ids" > dataDepth.csv
-cat $tempFile | awk -v features="$features" -v rawDataDepthFile="$rawDataDepthFile" -F',' '
+echo "Features,Number of feeds,Feed ids" > $dataDepthFile
+cat $tempFile | awk -v features="$features" -v rawDataDepthFile="$rawDataDepthFile" -v dataDepthFile="$dataDepthFile" -F',' '
 BEGIN {
   print "Feed Id,Feed Name,Component" > rawDataDepthFile
 }
@@ -78,9 +82,5 @@ BEGIN {
   numFeeds[feature]++
 }
 END {
-  for (feature in numFeeds) print feature "," numFeeds[feature] "," feeds[feature] >> "dataDepth.csv"
+  for (feature in numFeeds) print feature "," numFeeds[feature] "," feeds[feature] >> dataDepthFile
 }'
-
-ls -l $tempFile
-exit 0
-sed 's/"//g' dataDepth.csv | grep -v '^$' | sort | uniq -c | awk '{temp=$1; gsub(/^ *[0-9]+ */, ""); print $0 ", " temp}'
