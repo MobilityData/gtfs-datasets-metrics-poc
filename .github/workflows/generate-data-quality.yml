@@ -8,8 +8,7 @@ on:
     inputs:
       BUCKET_URL:
         description: 'gs:// URL to access the right bucket'
-        required: false
-        default: 'gs://mobilitydata-gtfs-validation-results3/reports/2024-03-15T04:11/'
+        required: true
 
 jobs:
   generate-data-quality:
@@ -28,8 +27,9 @@ jobs:
       - name: Get list of files
         run: |
           cd dataQuality
-          echo "Listing files in ${{ github.event.inputs.BUCKET_URL }}"
-          gsutil ls ${{ github.event.inputs.BUCKET_URL }} | head -10 > allFiles.txt
+          BUCKET_URL=${{ github.event.inputs.BUCKET_URL || 'default_value_for_push_event' }}
+          echo "Listing files in $BUCKET_URL"
+          gsutil ls $BUCKET_URL | head -10 > allFiles.txt
           cat allFiles.txt
 
       - uses: actions/upload-artifact@v3
