@@ -25,7 +25,7 @@ BEGIN {
     if ($0 ~ /5.0.0/) {
         found_500 = 1
         line_number++
-        command = sprintf("gsutil cp %s data/%s.json\n", $0, agency)
+        command = sprintf("gsutil cp %s reports/%s.json\n", $0, agency)
         print line_number ": " agency
         print "echo \"Processing #" line_number "\"" >> "commands.txt"
         print command >> "commands.txt"
