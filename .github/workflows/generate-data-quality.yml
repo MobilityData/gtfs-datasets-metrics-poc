@@ -28,12 +28,13 @@ jobs:
       - name: Get list of files
         run: |
           cd dataQuality
+          echo "Listing files in ${{ github.event.inputs.BUCKET_URL }}"
           gsutil ls ${{ github.event.inputs.BUCKET_URL }} | head -10 > allFiles.txt
           cat allFiles.txt
 
       - uses: actions/upload-artifact@v3
         with:
           name: allFiles.txt
-          path: allFiles.txt
+          path: dataQuality/allFiles.txt
 
 #      - name Download reports
