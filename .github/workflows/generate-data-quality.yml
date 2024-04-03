@@ -1,0 +1,104 @@
+name: Generate Data Quality
+
+on:
+  push:
+    branches:
+      - 85-data-quality
+  workflow_dispatch:
+    inputs:
+      BUCKET_URL:
+        description: 'gs:// URL to access the right bucket'
+        required: false
+        default: 'gs://mobilitydata-gtfs-validation-results3/reports/2024-03-15T04:11/'
+      VALIDATOR_VERSION:
+        description: 'Version of the validator to use. Only data from that version found in the bucket will be used.'
+        required: false
+        default: '5.0.0'
+
+jobs:
+  generate-data-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Authenticate with Google Cloud if necessary. No need if bucket is public
+#      - uses: google-github-actions/auth@v2
+#        with :
+#          credentials_json: ${{ secrets.POC3_BUCKET_ACCESSOR_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '>= 390.0.0'
+
+      - name: Get list of files
+        run: |
+          cd dataQuality
+          BUCKET_URL=${{ github.event.inputs.BUCKET_URL || 'gs://mobilitydata-gtfs-validation-results3/reports/2024-03-15T04:11/' }}
+          echo "Listing files in $BUCKET_URL"
+          gsutil ls -r $BUCKET_URL | head -200 > allFiles.txt
+          cat allFiles.txt
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allFiles.txt
+          path: dataQuality/allFiles.txt
+
+      - name: Download reports
+        run: |
+          cd dataQuality
+          ./download.sh  ${{ github.event.inputs.VALIDATOR_VERSION || '5.0.0' }}
+          mkdir reports
+          bash ./commands.txt
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: commands.txt
+          path: dataQuality/commands.txt
+
+      - name: Process reports for data quality
+        run: |
+          cd dataQuality
+          ./processQuality.sh
+
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: dataQuality.csv
+#          path: dataQuality/dataQuality.csv
+#
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: rawDataQuality.csv
+#          path: dataQuality/rawDataQuality.csv
+
+      - name: Checkout gtfs-validator repository to get the features.md file.
+        uses: actions/checkout@v3
+        with:
+            repository: MobilityData/gtfs-validator
+            ref: master
+            path: gtfs-validator
+
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: FEATURES.md
+#          path: gtfs-validator/docs/FEATURES.md
+
+      - name: Process reports for data depth
+        run: |
+          cd dataQuality
+          ./processDepth.sh
+
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: rawDataDepth.csv
+#          path: dataQuality/rawDataDepthFile.csv
+#
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: dataDepth.csv
+#          path: dataQuality/dataDepth.csv
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: results
+          path: dataQuality/results
