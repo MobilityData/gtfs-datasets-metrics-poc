@@ -85,9 +85,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: rawDataDepth.csv
-          path: dataQuality/rawDataDepth.csv
+          path: dataQuality/rawDataDepthFile.csv
 
       - uses: actions/upload-artifact@v3
         with:
-          name: rawDataQuality.csv
-          path: dataQuality/rawDataQuality.csv
+          name: dataDepth.csv
+          path: dataQuality/dataDepth.csv
