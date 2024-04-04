@@ -1,9 +1,6 @@
 name: Generate Data Quality
 
 on:
-  push:
-    branches:
-      - 85-data-quality
   workflow_dispatch:
     inputs:
       BUCKET_URL:
@@ -14,6 +11,10 @@ on:
         description: 'Version of the validator to use. Only data from that version found in the bucket will be used.'
         required: false
         default: '5.0.0'
+      NUMBER_OF_LS_LINES:
+        description: 'Number of lines to process from the listing of files in the bucket. This is useful to test the workflow, since processing all the lines can be lengthy. Set to 0 to use all the lines. For testing, a value of 200 is reasonable'
+        required: false
+        default: '0'
 
 jobs:
   generate-data-quality:
@@ -36,8 +37,12 @@ jobs:
           cd dataQuality
           BUCKET_URL=${{ github.event.inputs.BUCKET_URL || 'gs://mobilitydata-gtfs-validation-results3/reports/2024-03-15T04:11/' }}
           echo "Listing files in $BUCKET_URL"
-          gsutil ls -r $BUCKET_URL | head -200 > allFiles.txt
-          cat allFiles.txt
+          if [ ${{ github.event.inputs.NUMBER_OF_LS_LINES || '0' }} -eq 0 ]; then
+            gsutil ls -r $BUCKET_URL > allFiles.txt
+          else
+            gsutil ls -r $BUCKET_URL | head -n ${{github.event.inputs.NUMBER_OF_LS_LINES}} > allFiles.txt
+          fi
+          #cat allFiles.txt
 
       - uses: actions/upload-artifact@v3
         with:
